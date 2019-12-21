@@ -32,6 +32,8 @@ double generateGaussianNoise(double mu, double sigma)
     return z0 * sigma + mu;
 }
 
+double test_values[13] = {0.0,2.5,4.0,5.0,10.2,-2.0,30.3,42.0,8.0,2.0,1.0,7.0,-1.0};
+
 int main()
 {
     LokLibStats stats;
@@ -41,16 +43,40 @@ int main()
 
     for( size_t i = 0; i < count; ++i )
     {
-        stats.add(generateGaussianNoise(1.0,3.0));
+        stats.add(generateGaussianNoise(1.0,2.0));
     }
     
     assert( stats.get_count() == count );
 
-    std::cout << "Min:     " << stats.get_minimum() << std::endl;
-    std::cout << "Max:     " << stats.get_maximum() << std::endl;
-    std::cout << "Mean:    " << stats.get_mean()    << std::endl;
-    std::cout << "Medium:  " << stats.get_medium()  << std::endl;
-    std::cout << "Std Dev: " << stats.calculate_std_deviation()  << std::endl;
+    std::cout << count << " Guassian random numbers:" << std::endl;
+
+    std::cout << "  Min:     " << stats.get_minimum() << std::endl;
+    std::cout << "  Max:     " << stats.get_maximum() << std::endl;
+    std::cout << "  Sum:     " << stats.get_sum()     << std::endl;
+    std::cout << "  Mean:    " << stats.get_mean()    << std::endl;
+    std::cout << "  Medium:  " << stats.calculate_medium()  << std::endl;
+    std::cout << "  Std Dev: " << stats.calculate_std_deviation()  << std::endl;
+
+    stats.clear();
+
+    std::cout << std::endl << "Test Array: ";
+
+    for( size_t i = 0; i < 13; ++i )
+    {
+        std::cout << test_values[i];
+        if( i < 12 ) std::cout << ",";
+        stats.add(test_values[i]);
+    }
+
+    assert( stats.get_count() == 13 );
+
+    std::cout << std::endl;
+    std::cout << "  Min:     " << stats.get_minimum() << std::endl;
+    std::cout << "  Max:     " << stats.get_maximum() << std::endl;
+    std::cout << "  Sum:     " << stats.get_sum()     << std::endl;
+    std::cout << "  Mean:    " << stats.get_mean()    << std::endl;
+    std::cout << "  Medium:  " << stats.calculate_medium()  << std::endl;
+    std::cout << "  Std Dev: " << stats.calculate_std_deviation()  << std::endl;    
 
     return 0;
 }

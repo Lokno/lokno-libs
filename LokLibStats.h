@@ -1,4 +1,6 @@
 #include <vector>
+#include <algorithm>
+#include <functional>
 #include <limits>
 #include <cmath>
 
@@ -11,7 +13,9 @@ class LokLibStats
     std::vector<double> m_values;
 
     bool m_cached_std_dev;
+    bool m_cached_mean;
     double m_std_dev;
+    double m_medium;
 
 public:  
     LokLibStats(){ clear(); };
@@ -20,8 +24,12 @@ public:
     {
         m_min = std::numeric_limits<double>::max();
         m_max = -std::numeric_limits<double>::max();
+        m_sum = 0;
         m_count = 0u;
         m_cached_std_dev = false;
+        m_cached_mean = false;
+        m_std_dev = 0.0;
+        m_medium = 0.0;
         m_values.clear();
     }
 
@@ -35,6 +43,7 @@ public:
 
         // dirty cached values
         m_cached_std_dev = false;
+        m_cached_mean = false;
     };
 
     size_t get_count()
@@ -44,7 +53,17 @@ public:
 
     double get_mean()
     {
-        return m_sum / static_cast<double>(m_count);
+        double mean = 0.0;
+        if( m_count > 0u )
+        {
+            mean = m_sum / static_cast<double>(m_count);
+        }
+        return mean;
+    };
+
+    double get_sum()
+    {
+        return m_sum;
     };
 
     double get_minimum()
@@ -57,34 +76,43 @@ public:
         return m_max;
     };
 
-    double get_medium()
+    double calculate_medium()
     {
-        double medium;
-        if( m_count % 2u == 0u )
+        if( !m_cached_mean )
         {
-            medium = (m_values[m_count/2u-1] + m_values[m_count/2u]) / 2.0;
+            std::sort(m_values.begin(), m_values.end(), std::greater<double>());
+
+            if( m_count % 2u == 0u )
+            {
+                m_medium = (m_values[m_count/2u-1] + m_values[m_count/2u]) / 2.0;
+            }
+            else
+            {
+                m_medium = m_values[m_count/2u];
+            }
         }
-        else
-        {
-            medium = m_values[m_count/2u];
-        }
-        return medium;
+
+        return m_medium;
     };
 
     double calculate_std_deviation()
     {
         if( !m_cached_std_dev )
         {
-            m_std_dev = 0;
-            double mean = get_mean();
-            
-            for( auto iter=m_values.begin(); iter!=m_values.end(); ++iter )
+            m_std_dev = 0u;
+            if( m_count > 0u)
             {
-                double temp = *iter - mean;
-                m_std_dev += temp*temp;
-            }
+                m_std_dev = 0;
+                double mean = get_mean();
+                
+                for( auto iter=m_values.begin(); iter!=m_values.end(); ++iter )
+                {
+                    double temp = *iter - mean;
+                    m_std_dev += temp*temp;
+                }
 
-            m_std_dev /= static_cast<double>(m_count);
+                m_std_dev /= static_cast<double>(m_count);
+            }
         }
 
         return sqrt(m_std_dev);
