@@ -5,7 +5,7 @@
 // ChainNumber
 // Author: Lokno Decker
 //
-// C++ Class for representing positive integer with linked lists
+// C++ Class for representing positive integers with linked lists
 //
 // Written as an exercise in absurty, but potentially useful 
 // for memory obfuscation for calculations of small integers
