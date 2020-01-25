@@ -14,12 +14,28 @@ class LokLibStats
 
     bool m_cached_std_dev;
     bool m_cached_mean;
+    bool m_cached_histogram;
     double m_std_dev;
     double m_medium;
+    
+    size_t* m_bins;
+    int m_num_bins;
+    int m_max_bin;
+    int m_height_histogram = 8;
 
 public:  
-    LokLibStats(){ clear(); };
+    LokLibStats( int bins = 80 )
+    { 
+        clear(); 
+        m_num_bins = bins;
+        m_bins = new size_t[m_num_bins];
+    };
 
+    ~LokLibStats()
+    {
+        delete[] m_bins;
+    }
+    
     void clear()
     {
         m_min = std::numeric_limits<double>::max();
@@ -28,6 +44,7 @@ public:
         m_count = 0u;
         m_cached_std_dev = false;
         m_cached_mean = false;
+        m_cached_histogram = false;
         m_std_dev = 0.0;
         m_medium = 0.0;
         m_values.clear();
@@ -44,6 +61,7 @@ public:
         // dirty cached values
         m_cached_std_dev = false;
         m_cached_mean = false;
+        m_cached_histogram = false;
     };
 
     size_t get_count()
@@ -117,4 +135,43 @@ public:
 
         return sqrt(m_std_dev);
     };
+    
+    void print_histogram()
+    {
+        if( !m_cached_histogram )
+        {
+            m_cached_histogram = true;
+            for(int i = 0; i < m_num_bins; ++i)
+            {
+                m_bins[i] = 0u;
+            }
+            m_max_bin = 0;
+
+            double bin_step = (m_max - m_min) / static_cast<double>(m_num_bins);
+
+            for( auto iter=m_values.begin(); iter!=m_values.end(); ++iter )
+            {
+                int bin = static_cast<int>((*iter - m_min) / bin_step);
+                if( bin >= m_num_bins ) bin = m_num_bins-1;
+                m_bins[bin]++;
+                if( static_cast<int>(m_bins[bin]) > m_max_bin ) m_max_bin = static_cast<int>(m_bins[bin]);
+            }
+        }
+
+        for(int i = 0; i < m_num_bins; ++i)
+        {
+            m_bins[i] = static_cast<size_t>(floor(static_cast<float>(m_bins[i]) / static_cast<float>(m_max_bin) * static_cast<float>(m_height_histogram)));
+        }
+
+
+        for(int j = m_height_histogram; j > 0; --j)
+        {
+            for(int i = 0; i < m_num_bins; ++i)
+            {
+                if( static_cast<int>(m_bins[i]) >= j ) std::cout << "*";
+                else std::cout << " ";
+            }
+            std::cout << std::endl;
+        }
+    }
 };
